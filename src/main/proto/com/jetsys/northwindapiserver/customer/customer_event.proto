@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package com.jetsys.northwind.customer;
+
+option java_package = "com.jetsys.northwindapiserver.customer";
+option java_outer_classname = "CustomerEventProto";
+option java_multiple_files = true;
+
+message CustomerEventMessage {
+  string correlation_id  = 1;
+  string action          = 2;
+  string customer_id     = 3;
+  string company_name    = 4;
+  string contact_name    = 5;
+  string contact_title   = 6;
+  string address         = 7;
+  string city            = 8;
+  string region          = 9;
+  string postal_code     = 10;
+  string country         = 11;
+  string phone           = 12;
+  string fax             = 13;
+  string created_by      = 14;
+  string updated_by      = 15;
+  int64  created_at      = 16;  // epoch millis
+  int64  updated_at      = 17;  // epoch millis
+}

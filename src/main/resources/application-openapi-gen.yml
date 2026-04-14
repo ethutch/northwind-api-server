@@ -1,0 +1,68 @@
+app:
+  apicurio:
+    url                     : http://localhost:8081
+    customer-event-global-id: 8
+    order-event-global-id   : 7
+server:
+  port: 18080
+  servlet:
+    context-path: ""
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: false
+  # Optional: speed up startup
+  cache:
+    disabled: true
+
+spring:
+    application:
+      name: "northwind-api-server"
+    datasource :
+      url              : "jdbc:postgresql://localhost:5432/northwind"
+      username         : "postgres"
+      password         : "passw0rd!"
+      driver-class-name: org.postgresql.Driver
+
+      hikari           :
+        connection-timeout      : 20000
+        idle-timeout            : 30000
+        max-lifetime            : 1800000
+        maximum-pool-size       : 3
+        minimum-idle            : 1
+        pool-name               : PostgresHikariCP
+        connection-test-query   : SELECT 1
+        leak-detection-threshold: 3000
+    security   :
+      enabled: false
+
+    jpa        :
+      show-sql         : false
+      database-platform: org.hibernate.dialect.PostgreSQLDialect
+      hibernate        :
+        ddl-auto: none
+
+    cloud:
+      stream:
+        bindings:
+          customerRequest-out-0:
+            destination: customer-events
+            producer   :
+              useNativeEncoding: true
+        kafka   :
+          binder:
+            brokers            : localhost:9092
+            producer-properties:
+              key.serializer                              : org.apache.kafka.common.serialization.StringSerializer
+              value.serializer                            : io.apicurio.registry.serde.protobuf.ProtobufKafkaSerializer
+
+              apicurio.registry.url                       : http://localhost:8081/apis/registry/v2
+              apicurio.registry.auto-register             : true
+              apicurio.registry.as-confluent              : true
+
+              apicurio.registry.artifact-resolver-strategy: io.apicurio.registry.serde.strategy.SimpleTopicIdStrategy
+              apicurio.registry.artifact.group-id         : com.jetsys.northwindapiserver.customer
+              apicurio.registry.artifact.artifact-id      : CustomerRequest

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<appender name="jsonConsole" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+			<providers>
+				<timestamp/>
+				<version/>
+				<loggerName><fieldName>log.logger</fieldName></loggerName>
+				<logLevel><fieldName>log.level</fieldName></logLevel>
+				<threadName/>
+				<message/>
+				<stackTrace/>
+			</providers>
+		</encoder>
+	</appender>
+
+	<root level="INFO">
+		<appender-ref ref="jsonConsole" />
+	</root>
+
+	<logger name="org.hibernate" level="INFO" additivity="false">
+		<appender-ref ref="jsonConsole" />
+	</logger>
+</configuration>

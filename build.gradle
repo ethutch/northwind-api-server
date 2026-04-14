@@ -1,0 +1,254 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.7'
+    id 'com.google.protobuf' version '0.9.4'
+    id 'org.springdoc.openapi-gradle-plugin' version '1.9.0'
+    id "com.gorylenko.gradle-git-properties" version "2.4.2"
+    id 'com.github.ben-manes.versions' version '0.51.0'
+    id 'pl.allegro.tech.build.axion-release' version '1.18.16'
+    id 'idea'
+}
+
+group = "com.jetsys"
+description = "northwind-api-server"
+
+scmVersion {
+    repository {
+        remote = 'local'
+    }
+    tag {
+        prefix = 'v'
+    }
+    versionIncrementer 'incrementPatch'
+    snapshotCreator { version, position ->
+        '-' + position.shortRevision + '-SNAPSHOT'
+    }
+}
+
+project.version = scmVersion.version
+
+def versionString = getVersion()
+logger.error("Effective Version is:{}", versionString)
+
+bootJar {
+    archiveBaseName = 'northwindApiServer'
+    archiveVersion = versionString
+}
+
+
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    all {
+        // This kills Logback globally so it never hits the classpath
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+        exclude group: 'ch.qos.logback', module: 'logback-classic'
+        exclude group: 'ch.qos.logback', module: 'logback-core'
+    }
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+ext {
+    springBootVersion = '3.5.7'
+    springCloudVersion = '2024.0.2'
+}
+
+
+dependencies {
+    // Replaces spring dependency management plugin
+    implementation platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
+    implementation platform("org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}")
+
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+//    implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
+    implementation("org.springframework.boot:spring-boot-starter-graphql")
+    //
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+
+    // Spring Cloud Stream + Kafka Binder
+    implementation 'org.springframework.cloud:spring-cloud-starter-stream-kafka'
+    implementation 'org.apache.kafka:kafka-streams'
+    implementation 'org.springframework.kafka:spring-kafka'
+
+    // Protocol Buffer
+    implementation 'com.google.protobuf:protobuf-java:3.25.3'
+    // Apicurio Serde
+    implementation("io.apicurio:apicurio-registry-protobuf-serde-kafka:3.1.7")
+
+    //logging
+// Replace the default logging with Log4j2 globally
+//    modules {
+//        module("org.springframework.boot:spring-boot-starter-logging") {
+//            replacedBy("org.springframework.boot:spring-boot-starter-log4j2", "use log4j2 instead of logback")
+//        }
+//    }
+    implementation("org.apache.logging.log4j:log4j-layout-template-json") //:2.24.3")
+    implementation("org.springframework.boot:spring-boot-starter-log4j2")
+    implementation 'org.apache.logging.log4j:log4j-slf4j2-impl'
+
+    // Make the Hibernate logs to come out as json too
+    implementation("net.logstash.logback:logstash-logback-encoder:7.4")
+
+    implementation("org.apache.kafka:kafka-streams")
+    implementation("org.springframework.kafka:spring-kafka")
+    compileOnly 'org.projectlombok:lombok:1.18.42'
+    developmentOnly("org.springframework.boot:spring-boot-devtools:${springBootVersion}")
+   //FIXME: Understand this developmentOnly("org.springframework.boot:spring-boot-docker-compose")
+    runtimeOnly("com.h2database:h2")
+//    implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
+    implementation("io.micrometer:micrometer-registry-prometheus")
+    runtimeOnly("org.postgresql:postgresql")
+    annotationProcessor 'org.projectlombok:lombok:1.18.42'
+
+    implementation("io.jsonwebtoken:jjwt-api:0.12.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.5")
+    implementation("com.googlecode.libphonenumber:libphonenumber:9.0.19")
+
+    // Generate OpenAPI spec
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.16'  // or latest 2.x — check https://springdoc.org
+
+
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
+    }
+    testImplementation("org.springframework.graphql:spring-graphql-test")
+    testImplementation("org.springframework.kafka:spring-kafka-test")
+    testImplementation("org.springframework.security:spring-security-test")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    testImplementation("org.mockito:mockito-junit-jupiter")
+}
+
+idea {
+    module {
+        inheritOutputDirs = false
+        outputDir = file("$buildDir/classes/main/")
+        downloadJavadoc = true
+    }
+}
+
+//openApiGenerate {
+//    generatorName = "dynamic-html"          // Best choice for interactive docs (search, collapsible sections, examples)
+//    inputSpec = "$rootDir/specs/openapi.json"  // <-- adjust to your actual OpenAPI file path (json or yaml)
+//    outputDir = "$buildDir/generated/docs/openapi-html"
+//
+//    // Optional but useful tweaks
+//    configOptions = [
+//            // These are generator-specific; for dynamic-html these are common/useful
+//            theme: "redoc",                     // or "swagger-ui" style if preferred (dynamic-html supports themes)
+//            // siteTitle: "Northwind API Documentation",
+//            // footerText: "Generated from OpenAPI spec - © 2026 Your Company",
+//    ]
+//
+//    // If your spec has external $ref, set this to true
+//    skipValidateSpec = false                // Set to true if validation fails but spec is ok
+//
+//    // Make it depend on any task that might generate/update the spec (if dynamic)
+//    // dependsOn bootJar   // example if spec is runtime-generated
+//}
+
+// Optional: Make it easy to run + integrate into build
+tasks.named("build") {
+//    dependsOn("openApiGenerate")
+}
+
+// OpenAPI Generation - more reliable for slow-starting apps
+openApi {
+    apiDocsUrl.set("http://localhost:18080/v3/api-docs")
+
+    outputDir.set(layout.buildDirectory.dir("openapi"))
+    outputFileName.set("openapi.json")
+
+    waitTimeInSeconds.set(120)
+
+    customBootRun {
+        args = [
+                "--spring.profiles.active=openapi-gen",
+                "--server.port=18080",
+                "--server.servlet.context-path=",
+                "--springdoc.api-docs.enabled=true",
+                "--springdoc.swagger-ui.enabled=false"//,
+ //               "--spring.security.enabled=false"   // this is ignored by Spring, but we use profile instead
+        ]
+    }
+}
+
+
+springBoot {
+    buildInfo()
+}
+
+processResources {
+    exclude '**/*.proto'
+}
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.25.3'
+    }
+
+    generateProtoTasks {
+        all().each { task ->
+            // add any plugins here if needed (e.g. grpc)
+        }
+    }
+}
+
+// Ensures generated sources are included in the compile classpath
+sourceSets {
+    main {
+        proto {
+            srcDir 'src/main/proto'
+        }
+        java {
+            srcDir 'build/generated/source/proto/main/java'
+        }
+    }
+}
+
+tasks.named("compileJava") {
+    dependsOn("generateProto")
+}
+
+tasks.named("compileTestJava") {
+    dependsOn("generateTestProto")
+}
+
+tasks.named('build') {
+    dependsOn ("generateOpenApiDocs")
+}
+tasks.named('bootJar') {
+    dependsOn generateOpenApiDocs
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+
+}
+
+tasks.register("printVersion") {
+    doLast {
+        println project.version
+    }
+}
+
+

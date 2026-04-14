@@ -1,0 +1,108 @@
+app:
+  security:
+    users:
+      - username: alice
+        password: $2y$10$aLmJBvwfLpR0YQbEe2kKpOjxEMkquNqcXFtBYhBLkfNfv4xM/S1zC
+        roles: USER
+      - username: admin
+        password: $2y$10$FSxxumpHIp2genGIpbxGZuPBlCdPz1gi1w8X0aklnVJztl09sNBKi
+        roles: USER
+      - username: prometheus
+        password: $2y$10$rmxwaAiArd2bWzgPzhUHCO.rH8SSbiOsYGVOG6JMsK6rB0g8VphNS
+        roles: ACTUATOR
+  apicurio:
+    url: http://localhost:8081
+    customer-event-global-id: 8
+    order-event-global-id: 7
+
+spring:
+  application:
+    name: "northwind-api-server"
+  datasource:
+    url: "jdbc:postgresql://host.docker.internal:5432/northwind"
+    username                  : "postgres"
+    password                  : "passw0rd!"
+    driver-class-name         : org.postgresql.Driver
+
+    hikari:
+      connection-timeout      : 20000
+      idle-timeout            : 30000
+      max-lifetime            : 1800000
+      maximum-pool-size       : 3
+      minimum-idle            : 1
+      pool-name               : PostgresHikariCP
+      connection-test-query   : SELECT 1
+      leak-detection-threshold: 3000
+  security:
+    user:
+      name: prometheus
+      password: passw0rd!
+      roles: PROMETHEUS
+
+  jpa:
+    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto  : none
+
+  cloud:
+    stream:
+      bindings:
+        customerRequest-out-0:
+          destination : customer-events
+          producer    :
+            useNativeEncoding: true
+      kafka   :
+        binder:
+          brokers: host.docker.internal:9092
+          producer-properties:
+            key.serializer                              : org.apache.kafka.common.serialization.StringSerializer
+            value.serializer                            : io.apicurio.registry.serde.protobuf.ProtobufKafkaSerializer
+
+            apicurio.registry.url                       : http://host.docker.internal:8081/apis/registry/v2
+            apicurio.registry.auto-register             : true
+            apicurio.registry.as-confluent              : true
+
+            apicurio.registry.artifact-resolver-strategy: io.apicurio.registry.serde.strategy.SimpleTopicIdStrategy
+            apicurio.registry.artifact.group-id         : com.jetsys.northwindapiserver.customer
+            apicurio.registry.artifact.artifact-id      : CustomerRequest
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    prometheus:
+      access: read_only
+    health:
+      show-details: always
+  info:
+    git:
+      mode: full
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
+logging:
+  config: classpath:log4j2-spring.xml
+  level:
+    org.hibernate.sql: info
+    org.hibernate.orm.results: info
+    org.springframework.security: info
+    org.springframework.web: info
+    org.springframework.integration              : INFO
+    com.jetsys.northwindapiserver: trace
+    org.springframework.cloud.stream: info
+    org.apache.kafka: info
+    org.springframework.cloud.stream.binder.kafka: info
+    io.apicurio                                  : debug
+    org.springframework.cloud.stream.binder.AbstractMessageChannelBinder: trace
+    root                         : info
+

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<JsonTemplateLayout eventTemplateUri="classpath:EcsLayout.json">
+				<EventTemplateAdditionalField key="container_name" value="${env:HOSTNAME}"/>
+			</JsonTemplateLayout>
+		</Console>
+	</Appenders>
+	<Loggers>
+		<Root level="info">
+			<AppenderRef ref="Console"/>
+		</Root>
+	</Loggers>
+</Configuration>
