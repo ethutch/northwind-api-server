@@ -254,45 +254,7 @@ You can monitor messages posted to kafka with this command
 ### Generate encrypted passwords:
 `htpasswd -bnBC 10 '' 'passw0rd!' | tr -d ':\n'`
 
-### Heap and Stack Dumps
-
-##### Heap Dumps
-Using the flags in Dockerfile the JVM will take a heap dump if it runs out of memory.  If you wish to manually take a dump that is more complex.  First be aware that taking a heap dump will suspend the **entire** jvm for the duration of writing the dump.  That is obvious of course, but still worth keeping in mind.
-
-The basic problem is the easiest (relatively speaking) way to take them is with the jcmd CLI.  But that is only available in the JDK.  If you follow best practices your pod is running a JRE.  The solution is to use a temporary sidecar.
-
-Get the container name and remote into the sidecar:
-
-```
-kubectl get pods   # of course
-kubectl get pod northwind-api-service-5b4965d9b4-c47v9 -o jsonpath='{.spec.containers[*].name}'
-kubectl debug -it northwind-api-service-5b4965d9b4-c47v9 --image=eclipse-temurin:21-jdk --target=northwind -- bash
-
-# at the container bash prompt
-jcmd 1 GC.heap_dump /tmp/headdump.hprof
-```
-
-The goal is to get heapdump.hprof somewhere you can examine it.
-
-`'kubectl cp <namespace>/<pod>:/tmp/heapdump.hprof ./heapdump.hprof`
-
-Now to diagnose the output the gold standard remains the 
-***Eclipse Memory Analyzer (MAT)***.  But you can also use jvisualvm or IntelliJ paid version has a tool as well.
-
-##### Stack Dumps
-For a stack dump the process is much simplier.  You can use the classic kill -3 like always or use the more modern jcmd from your local CLI
-
-`kubectl exec -it <pod> -- kill -3 1`
-
-The problem here is the dump only goes to stdout which is messy to get into a place you can manipulate it.  A better solution is to use *jcmd* from a sidecar as shown for heapdump above.
-
-`jcmd 1 Thread.print -l > /tmp/threaddump.txt`
-
-Use the same kubectl cp CLI shown above for heapdump.
-
-`kubectl cp <namespace>/<pod>:/tmp/threaddump.txt ./threaddump.txt -c <container-name>`
-
-To analyze it you can start by reading it of course.  This is a great way to look for database deadlocks or long running queries blocking multiple threads.  More more detailed examination you can amazingly still use Thread Dump Analyzer (TDA) Java Swing app.  Or online at [Fastthread](https://www.fastthread.io)
+#
 
 
 

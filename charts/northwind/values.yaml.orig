@@ -75,14 +75,8 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 
 # Additional volumes for the pod
-volumeMounts:
-  - mountPath: /tmp
-    name: tmp-vol
-
-volumes:
-  - name: tmp-vol
-    emptyDir:
-      sizeLimit: 2Gi
+volumeMounts: []
+volumes: []
 
 nodeSelector: {}
 

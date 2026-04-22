@@ -66,14 +66,10 @@ spring:
             apicurio.registry.artifact-resolver-strategy: io.apicurio.registry.serde.strategy.SimpleTopicIdStrategy
             apicurio.registry.artifact.group-id         : com.jetsys.northwindapiserver.customer
             apicurio.registry.artifact.artifact-id      : CustomerRequest
-  jmx:
-   enabled: true
+
 
 management:
   endpoints:
-    jmx:
-      exposure:
-        include: "*"
     web:
       exposure:
         include: "*"

@@ -29,7 +29,6 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "..serviceAccountName" . }}
       {{- with .Values.podSecurityContext }}
-      shareProcessNamespace: true
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
