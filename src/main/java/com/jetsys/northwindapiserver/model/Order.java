@@ -2,6 +2,7 @@ package com.jetsys.northwindapiserver.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.domain.Persistable;
 
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
@@ -11,11 +12,29 @@ import java.util.Set;
 @Getter
 @Setter
 @AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "orders")
-public class Order extends AuditableEntity {
+public class Order extends AuditableEntity implements Persistable<Integer> {
+
+	@Transient
+	@Builder.Default
+	private boolean isNew = true;
+
+	@PostLoad
+	@PostPersist
+	void markNotNew() {
+		this.isNew = false;
+	}
+
+	@Override
+	public boolean isNew() {
+		return isNew;
+	}
+
 
 	@Id
+	@EqualsAndHashCode.Include
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "orders_order_id_seq")
 	@SequenceGenerator(name = "orders_order_id_seq", sequenceName = "orders_order_id_seq", allocationSize = 1)
 	@Column(name = "order_id", nullable = false)
@@ -65,7 +84,20 @@ public class Order extends AuditableEntity {
 	@JoinColumn(name = "employee_id", insertable = false, updatable = false)
 	private Employee employee;
 
-	// EAGER because you explicitly requested it earlier
-	@OneToMany(mappedBy = "order", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+	@Builder.Default
+	@OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<OrderDetail> orderDetails = new LinkedHashSet<>();
+
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof Order other)) return false;
+		return id != null && id.equals(other.id);
+	}
+
+	@Override
+	public int hashCode() {
+		return getClass().hashCode();
+	}
 }

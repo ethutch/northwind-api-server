@@ -110,3 +110,27 @@ logging:
     org.springframework.cloud.stream.binder.AbstractMessageChannelBinder: trace
     root                         : info
 
+---
+
+spring:
+  config:
+    activate:
+      on-profile: localTest
+  datasource:
+    url: "jdbc:postgresql://localhost:5432/northwind"
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+
+          producer-properties:
+            apicurio:
+              registry:
+                url:  http://localhost:8081/apis/registry/v2
+
+server:
+  port: 18080
+  servlet:
+    context-path: ""
+

@@ -67,9 +67,9 @@ class OrderControllerTest {
 
 
 		Page<OrderVO> page = new PageImpl<>(List.of(orderVO), PageRequest.of(0, 20), 1);
-		when(orderService.getOrdersByCustomer(anyString(), any(Pageable.class))).thenReturn(page);
+		when(orderService.getOrdersByCustomer(anyString(), any(Pageable.class), anyBoolean())).thenReturn(page);
 
-		ResponseEntity<?> response = orderController.getOrdersByCustomer("ALFKI", Pageable.ofSize(1));
+		ResponseEntity<?> response = orderController.getOrdersByCustomer("ALFKI", Pageable.ofSize(1), false);
 
 		assertNotNull(response);
 		assertInstanceOf(Page.class, response.getBody());
@@ -78,17 +78,17 @@ class OrderControllerTest {
 	@Test
 	void testGetOneNotFound() {
 
-		when(orderService.getOrder(1)).thenThrow( new NoSuchElementException("Order not found"));
+		when(orderService.getOrder(1, false)).thenThrow( new NoSuchElementException("Order not found"));
 
 		assertThrowsExactly(NoSuchElementException.class,
-				() -> orderController.getOrder(1));
+				() -> orderController.getOrder(1, false));
 	}
 
 	@Test
 	void testGetOneFound() {
-		when(orderService.getOrder(1)).thenReturn(orderVO);
+		when(orderService.getOrder(1, false)).thenReturn(orderVO);
 
-		ResponseEntity<OrderVO> response = orderController.getOrder(1);
+		ResponseEntity<OrderVO> response = orderController.getOrder(1, false);
 
 		assertEquals(HttpStatusCode.valueOf(200), response.getStatusCode());
 	}

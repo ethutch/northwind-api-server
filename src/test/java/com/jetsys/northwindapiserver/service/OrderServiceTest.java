@@ -104,21 +104,21 @@ class OrderServiceTest {
 	@Test
 	void getAllOrders_returnsPaginatedResults() {
 		Page<OrderVO> page = new PageImpl<>(List.of(sampleOrderVO));
-		when(orderManager.findAll(any(Pageable.class))).thenReturn(page);
+		when(orderManager.findAll(any(Pageable.class), anyBoolean())).thenReturn(page);
 
-		Page<OrderVO> result = orderService.getAllOrders(Pageable.unpaged());
+		Page<OrderVO> result = orderService.getAllOrders(Pageable.unpaged(), false);
 
 		assertEquals(1, result.getTotalElements());
 		assertEquals("ALFKI", result.getContent().get(0).customerId());
-		verify(orderManager).findAll(any(Pageable.class));
+		verify(orderManager).findAll(any(Pageable.class), anyBoolean());
 	}
 
 	@Test
 	void getAllOrders_emptyPage_returnsEmptyResult() {
-		when(orderManager.findAll(any(Pageable.class)))
+		when(orderManager.findAll(any(Pageable.class),anyBoolean()))
 				.thenReturn(new PageImpl<>(List.of()));
 
-		Page<OrderVO> result = orderService.getAllOrders(Pageable.unpaged());
+		Page<OrderVO> result = orderService.getAllOrders(Pageable.unpaged(), false);
 
 		assertTrue(result.isEmpty());
 	}
@@ -129,20 +129,20 @@ class OrderServiceTest {
 
 	@Test
 	void getOrder_found_returnsVO() {
-		when(orderManager.findById(1)).thenReturn(Optional.of(sampleOrderVO));
+		when(orderManager.findById(1, false)).thenReturn(Optional.of(sampleOrderVO));
 
-		OrderVO result = orderService.getOrder(1);
+		OrderVO result = orderService.getOrder(1, false);
 
 		assertEquals("ALFKI", result.customerId());
-		verify(orderManager).findById(1);
+		verify(orderManager).findById(1, false);
 	}
 
 	@Test
 	void getOrder_notFound_throwsNoSuchElementException() {
-		when(orderManager.findById(99)).thenReturn(Optional.empty());
+		when(orderManager.findById(99, false)).thenReturn(Optional.empty());
 
-		assertThrows(NoSuchElementException.class, () -> orderService.getOrder(99));
-		verify(orderManager).findById(99);
+		assertThrows(NoSuchElementException.class, () -> orderService.getOrder(99, false));
+		verify(orderManager).findById(99, false);
 	}
 
 	// -------------------------------------------------------------------------
@@ -152,21 +152,21 @@ class OrderServiceTest {
 	@Test
 	void getOrdersByCustomer_returnsPaginatedResults() {
 		Page<OrderVO> page = new PageImpl<>(List.of(sampleOrderVO));
-		when(orderManager.findByCustomerId(eq("ALFKI"), any(Pageable.class)))
+		when(orderManager.findByCustomerId(eq("ALFKI"), any(Pageable.class), anyBoolean()))
 				.thenReturn(page);
 
-		Page<OrderVO> result = orderService.getOrdersByCustomer("ALFKI", Pageable.unpaged());
+		Page<OrderVO> result = orderService.getOrdersByCustomer("ALFKI", Pageable.unpaged(), false);
 
 		assertEquals(1, result.getTotalElements());
-		verify(orderManager).findByCustomerId(eq("ALFKI"), any(Pageable.class));
+		verify(orderManager).findByCustomerId(eq("ALFKI"), any(Pageable.class), anyBoolean());
 	}
 
 	@Test
 	void getOrdersByCustomer_unknownCustomer_returnsEmptyPage() {
-		when(orderManager.findByCustomerId(eq("XXXXX"), any(Pageable.class)))
+		when(orderManager.findByCustomerId(eq("XXXXX"), any(Pageable.class), anyBoolean()))
 				.thenReturn(new PageImpl<>(List.of()));
 
-		Page<OrderVO> result = orderService.getOrdersByCustomer("XXXXX", Pageable.unpaged());
+		Page<OrderVO> result = orderService.getOrdersByCustomer("XXXXX", Pageable.unpaged(), false);
 
 		assertTrue(result.isEmpty());
 	}

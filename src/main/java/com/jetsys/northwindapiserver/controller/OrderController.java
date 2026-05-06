@@ -28,7 +28,8 @@ public interface OrderController {
 			@ApiResponse(responseCode = "200", description = "Page of Order Value Objects"),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content())
 	})
-	ResponseEntity<Page<OrderVO>> getAllOrders(Pageable pageable);
+	ResponseEntity<Page<OrderVO>> getAllOrders(Pageable pageable,
+			@RequestParam(name = "include_details", defaultValue = "false") boolean includeDetails);
 
 	@GetMapping("/{id}")
 	@Operation(summary = "Retrieve a single order by Id",
@@ -39,7 +40,8 @@ public interface OrderController {
 			@ApiResponse(responseCode = "404", description = "Order Not found", content = @Content()),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content())
 	})
-	ResponseEntity<OrderVO> getOrder(@PathVariable Integer id);
+	ResponseEntity<OrderVO> getOrder(@PathVariable Integer id,
+			@RequestParam(name = "include_details", defaultValue = "false") boolean includeDetails);
 
 	@GetMapping("/customer/{customerId}")
 	@Operation(summary = "Get a page of all Orders for a given customer",
@@ -51,7 +53,7 @@ public interface OrderController {
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content())
 	})
 	ResponseEntity<Page<OrderVO>> getOrdersByCustomer(@PathVariable String customerId,
-			Pageable pageable);
+			Pageable pageable, @RequestParam(name = "include_details", defaultValue = "false") boolean includeDetails);
 
 	@PostMapping
 	@Operation(summary = "Create a new order",

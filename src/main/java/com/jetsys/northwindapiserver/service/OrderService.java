@@ -8,9 +8,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface OrderService {
-	Page<OrderVO> getAllOrders(Pageable pageable);
+	Page<OrderVO> getAllOrders(Pageable pageable, boolean includeDetails);
 
-	OrderVO getOrder(Integer id);
+	OrderVO getOrder(Integer id, boolean includeDetails);
 
 	OrderVO createOrder(OrderRequest orderRequest);
 
@@ -18,7 +18,7 @@ public interface OrderService {
 
 	void deleteOrder(Integer id);
 
-	Page<OrderVO> getOrdersByCustomer(String customerId, Pageable pageable);
+	Page<OrderVO> getOrdersByCustomer(String customerId, Pageable pageable, boolean includeDetails);
 
 	OrderDetailVO addDetail(Integer orderId, OrderDetailRequest orderDetailRequest);
 

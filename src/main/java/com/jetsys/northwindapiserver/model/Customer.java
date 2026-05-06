@@ -3,15 +3,41 @@ package com.jetsys.northwindapiserver.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.springframework.data.domain.Persistable;
 
 @NoArgsConstructor
 @Getter
 @Setter
 @AllArgsConstructor
+@Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @Entity
 @Table(name = "customers")
-public class Customer extends AuditableEntity {
+public class Customer extends AuditableEntity implements Persistable <String> {
+
+	@Transient
+	@Builder.Default
+	private boolean isNew = true;
+
+	@PostLoad
+	@PostPersist
+	void markNotNew() {
+		this.isNew = false;
+	}
+
+	@Override
+	public String getId() {
+		return getCustomerId();
+	}
+
+	@Override
+	public boolean isNew() {
+		return isNew;
+	}
+
+
 	@Id
+	@EqualsAndHashCode.Include
 	@Column(name = "customer_id", nullable = false, length = 5)
 	@Size(max = 5)
 	private String customerId;

@@ -74,8 +74,19 @@ public class CustomerManagerImpl implements CustomerManager {
 		return customerRepository.findById(customerVO.customerId())
 				.map(existingCustomer -> ServiceResult.alreadyExisted(CustomerVO.fromEntity(existingCustomer)))
 				.orElseGet(() ->  {
-					Customer customer = new Customer(customerVO.customerId(), customerVO.companyName(), customerVO.contactName(), customerVO.contactTitle(),
-							customerVO.address(), customerVO.city(), customerVO.region(), customerVO.postalCode(), customerVO.country(),customerVO.phone(), customerVO.fax());
+					Customer customer = Customer.builder()
+							.customerId(customerVO.customerId())
+							.companyName(customerVO.companyName())
+							.contactName(customerVO.contactName())
+							.contactTitle(customerVO.contactTitle())
+							.address(customerVO.address())
+							.city(customerVO.city())
+							.region(customerVO.region())
+							.postalCode(customerVO.postalCode())
+							.country(customerVO.country())
+							.phone(customerVO.phone())
+							.fax(customerVO.fax())
+							.build();
 					var persistedCustomer = customerRepository.save(customer);
 
 					// Save updated customer to outbox for Kafka publishing
@@ -100,7 +111,9 @@ public class CustomerManagerImpl implements CustomerManager {
 		Customer customer = customerRepository.findById(customerVO.customerId())
 				.orElseThrow(() -> new EntityNotFoundException("Customer with id:" + customerVO.customerId() + "not found to update"));
 		applyUpdate(customer, customerVO);
+		log.info("READ CUSTOMER NEW:{}", customer.isNew());
 		var persistedCustomer = customerRepository.save(customer);
+		log.info("UPDATED CUSTOMER NEW:{}", persistedCustomer.isNew());
 
 		// Save deleted customer to outbox for Kafka publishing
 		outboxService.publish(persistedCustomer, OutboxAction.UPDATE, customerOutboxMapper);

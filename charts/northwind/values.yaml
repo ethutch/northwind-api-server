@@ -11,7 +11,7 @@ image:
   tag: "0.1.0"
 
 nameOverride: ""
-fullnameOverride: ""
+fullnameOverride: northwind-api-service
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -93,8 +93,6 @@ affinity: {}
 ## Grok crap below here
 httpRoute:
   enabled: false  # Keeps the resource disabled/skipped safely
-
-fullnameOverride: northwind-api-service
 
 global:
   labels:

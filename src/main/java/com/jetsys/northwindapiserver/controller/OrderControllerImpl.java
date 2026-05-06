@@ -28,16 +28,18 @@ public class OrderControllerImpl implements OrderController {
 	 * Get all orders. Not the most practical of all endpoints
 	 *
 	 * @param pageable  Pageable restrictions.
+	 * @param includeDetails    Control loading of detail lines
 	 * @return          Page of all orders.
 	 */
 		@Override
 		@PreAuthorize("hasRole('USER')")
 		@GetMapping
-		public ResponseEntity<Page<OrderVO>> getAllOrders(Pageable pageable) {
+		public ResponseEntity<Page<OrderVO>> getAllOrders(Pageable pageable,
+				@RequestParam(name = "include_details", defaultValue = "false") boolean includeDetails) {
 
 			// Make this an info line to help monitor if anyone ever uses it
 			log.info("getAllOrders called");
-			Page<OrderVO> orders = orderService.getAllOrders(pageable);
+			Page<OrderVO> orders = orderService.getAllOrders(pageable, includeDetails);
 			return ResponseEntity.ok(orders);
 		}
 
@@ -45,15 +47,17 @@ public class OrderControllerImpl implements OrderController {
 	 * Get a specific order by ID
 	 *
 	 * @param id    The Order ID
+	 * @param includeDetails   Control loading of detail lines
 	 * @return      OrderVO Requested Order
 	 */
 		@Override
 		@PreAuthorize("hasRole('USER')")
 		@GetMapping("/{id}")
-		public ResponseEntity<OrderVO> getOrder(@PathVariable Integer id) {
+		public ResponseEntity<OrderVO> getOrder(@PathVariable Integer id,
+				@RequestParam(name = "include_details", defaultValue = "false") boolean includeDetails)  {
 
 			log.debug("Get order by id {}", id);
-			OrderVO order = orderService.getOrder(id);
+			OrderVO order = orderService.getOrder(id, includeDetails);
 			return ResponseEntity.ok(order);
 		}
 
@@ -61,16 +65,17 @@ public class OrderControllerImpl implements OrderController {
 	 * Get the orders for a given customer
 	 * @param customerId        The customer
 	 * @param pageable          Paging control
+	 * @param includeDetails    Control loading of detail lines
 	 * @return                  A page of results
 	 */
 		@Override
 		@PreAuthorize("hasRole('USER')")
 		@GetMapping("/customer/{customerId}")
 		public ResponseEntity<Page<OrderVO>> getOrdersByCustomer(@PathVariable String customerId,
-				Pageable pageable) {
+				Pageable pageable, @RequestParam(name = "include_details", defaultValue = "false") boolean includeDetails)  {
 
 			log.debug("Get orders for customer id {}", customerId);
-			Page<OrderVO> orders = orderService.getOrdersByCustomer(customerId, pageable);
+			Page<OrderVO> orders = orderService.getOrdersByCustomer(customerId, pageable, includeDetails);
 			return ResponseEntity.ok(orders);
 		}
 

@@ -11,13 +11,13 @@ import java.util.Optional;
 public interface OrderManager {
 	// Query: paged lists
 	@Transactional(readOnly = true)
-	Page<OrderVO> findAll(Pageable pageable);
+	Page<OrderVO> findAll(Pageable pageable, boolean includeDetails);
 
 	@Transactional(readOnly = true)
-	Optional<OrderVO> findById(Integer id);
+	Optional<OrderVO> findById(Integer id, boolean includeDetails);
 
 	@Transactional(readOnly = true)
-	Page<OrderVO> findByCustomerId(String customerId, Pageable pageable);
+	Page<OrderVO> findByCustomerId(String customerId, Pageable pageable, boolean includeDetails);
 
 	// Create: persist header, then details once ID exists
 	OrderVO create(OrderVO orderVO);

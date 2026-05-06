@@ -18,7 +18,7 @@ import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class OrderServiceImpl implements OrderService {
 
 	private final OrderRepository orderRepository;
@@ -31,8 +31,8 @@ public class OrderServiceImpl implements OrderService {
 	 * @return          Result of all orders
 	 */
 	@Override
-	public Page<OrderVO> getAllOrders(Pageable pageable) {
-		return orderManager.findAll(pageable);
+	public Page<OrderVO> getAllOrders(Pageable pageable, boolean includeDetails) {
+		return orderManager.findAll(pageable, includeDetails);
 	}
 
 	/**
@@ -41,8 +41,8 @@ public class OrderServiceImpl implements OrderService {
 	 * @return          The order complete with detail lines
 	 */
 	@Override
-	public OrderVO getOrder(Integer id) {
-		return orderManager.findById(id)
+	public OrderVO getOrder(Integer id, boolean includeDetails) {
+		return orderManager.findById(id,includeDetails)
 				.orElseThrow(() -> new NoSuchElementException("Order not found"));
 	}
 
@@ -52,6 +52,7 @@ public class OrderServiceImpl implements OrderService {
 	 * @return              The persisted view of new order
 	 */
 	@Override
+	@Transactional
 	public OrderVO createOrder(OrderRequest orderRequest) {
 
 		return orderManager.create(OrderVO.fromRequest(orderRequest));
@@ -64,6 +65,7 @@ public class OrderServiceImpl implements OrderService {
 	 * @return              The normalized representation of the order
 	 */
 	@Override
+	@Transactional
 	public OrderVO updateOrder(Integer id, OrderRequest orderRequest) {
 		if (!orderRepository.existsById(id)) {
 			throw new NoSuchElementException("Order not found");
@@ -76,6 +78,7 @@ public class OrderServiceImpl implements OrderService {
 	 * @param id        The ID to delete
 	 */
 	@Override
+	@Transactional
 	public void deleteOrder(Integer id) {
 		orderManager.delete(id);
 	}
@@ -87,8 +90,8 @@ public class OrderServiceImpl implements OrderService {
 	 * @return                  A page of orders
 	 */
 	@Override
-	public Page<OrderVO> getOrdersByCustomer(String customerId, Pageable pageable) {
-		return orderManager.findByCustomerId(customerId, pageable);
+	public Page<OrderVO> getOrdersByCustomer(String customerId, Pageable pageable, boolean includeDetails) {
+		return orderManager.findByCustomerId(customerId, pageable, includeDetails);
 	}
 
 	/**
@@ -98,6 +101,7 @@ public class OrderServiceImpl implements OrderService {
 	 * @return                      Normalized view of the new detail line
 	 */
 	@Override
+	@Transactional
 	public OrderDetailVO addDetail(Integer orderId, OrderDetailRequest orderDetailRequest) {
 
 		var orderDetailVO = OrderDetailVO.fromRequest(orderDetailRequest);
@@ -111,6 +115,7 @@ public class OrderServiceImpl implements OrderService {
 	 * @return                      The new detail line
 	 */
 	@Override
+	@Transactional
 	public OrderDetailVO updateDetail(Integer orderId, OrderDetailRequest orderDetailRequest) {
 		var orderDetailVO = OrderDetailVO.fromRequest(orderDetailRequest);
 		return orderManager.updateDetail(orderId, orderDetailVO);
@@ -122,6 +127,7 @@ public class OrderServiceImpl implements OrderService {
 	 * @param productId     The line to delete
 	 */
 	@Override
+	@Transactional
 	public void deleteDetail(Integer orderId, Short productId) {
 		OrderDetailId id = new OrderDetailId();
 		id.setOrderId(orderId);

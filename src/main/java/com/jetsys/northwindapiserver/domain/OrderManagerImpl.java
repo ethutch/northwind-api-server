@@ -17,7 +17,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -40,9 +39,12 @@ public class OrderManagerImpl implements OrderManager {
 	 * @return          the requested page
 	 */
 	@Override
-	@Transactional(readOnly = true)
-	public Page<OrderVO> findAll(Pageable pageable) {
-		return orderRepository.findAll(pageable).map(OrderVO::fromEntity);
+	public Page<OrderVO> findAll(Pageable pageable, boolean includeDetails) {
+
+		if (includeDetails) {
+			return orderRepository.findAll(pageable).map(order -> OrderVO.fromEntity(order, true));
+		}
+		return orderRepository.findAll(pageable).map(order -> OrderVO.fromEntity(order, false));
 	}
 
 	/**
@@ -51,10 +53,13 @@ public class OrderManagerImpl implements OrderManager {
 	 * @return      The order
 	 */
 	@Override
-	@Transactional(readOnly = true)
-	public Optional<OrderVO> findById(Integer id) {
+	public Optional<OrderVO> findById(Integer id, boolean includeDetails) {
 
-		return orderRepository.findById(id).map(OrderVO::fromEntity);
+		log.debug("Find a single order by id:{}",id);
+		if (includeDetails) {
+			return orderRepository.findById(id).map(order -> OrderVO.fromEntity(order, true));
+		}
+		return orderRepository.findById(id).map(order -> OrderVO.fromEntity(order, false));
 
 	}
 
@@ -66,10 +71,16 @@ public class OrderManagerImpl implements OrderManager {
 	 * @return              The page of results
 	 */
 	@Override
-	@Transactional(readOnly = true)
-	public Page<OrderVO> findByCustomerId(String customerId, Pageable pageable) {
+	public Page<OrderVO> findByCustomerId(String customerId, Pageable pageable, boolean includeDetails) {
+
 		log.debug("Finding orders by customer id {}", customerId);
-		return orderRepository.findByCustomerId(customerId, pageable).map(OrderVO::fromEntity);
+
+		if (includeDetails) {
+			return orderRepository.findByCustomerId(customerId, pageable)
+					.map(order -> OrderVO.fromEntity(order, true));
+		}
+		return orderRepository.findByCustomerId(customerId, pageable)
+				.map(order -> OrderVO.fromEntity(order, false));
 	}
 
 	/**
@@ -112,7 +123,7 @@ public class OrderManagerImpl implements OrderManager {
 
 		// Save updated order to outbox for Kafka publishing
 		outboxService.publish(saved, OutboxAction.CREATE, orderOutboxMaper);
-		return OrderVO.fromEntity(saved);
+		return OrderVO.fromEntity(saved, true);
 	}
 
 
@@ -152,7 +163,7 @@ public class OrderManagerImpl implements OrderManager {
 
 		var newPersistedOrder = orderRepository.save(existingOrder);
 		outboxService.publish(newPersistedOrder, OutboxAction.UPDATE, orderOutboxMaper);
-		return OrderVO.fromEntity(newPersistedOrder);
+		return OrderVO.fromEntity(newPersistedOrder, true);
 	}
 
 	/**
@@ -162,14 +173,12 @@ public class OrderManagerImpl implements OrderManager {
 	@Override
 	public void delete(Integer id) {
 
-		var order = orderRepository.findById(id);
-		if (order.isEmpty()) {
-			throw new EntityNotFoundException("Order with id:" + id + "not found to delete");
-		} else {
+		var order = orderRepository.findById(id)
+				.orElseThrow(() -> new EntityNotFoundException("Order with id:" + id + "not found to delete"));
+
 			orderRepository.deleteById(id);
 			// Save deleted order to outbox for Kafka publishing
-			outboxService.publish(order.get(), OutboxAction.DELETE, orderOutboxMaper);
-		}
+		outboxService.publish(order, OutboxAction.DELETE, orderOutboxMaper);
 	}
 
 	/*
@@ -335,13 +344,14 @@ public class OrderManagerImpl implements OrderManager {
 					.productId(orderDetailVO.productId())
 					.build();
 
-			OrderDetail orderDetail = new OrderDetail();
-			orderDetail.setId(orderDetailId);
-			orderDetail.setOrder(order);
-			orderDetail.setProduct(productRepository.getReferenceById(orderDetailVO.productId()));
-			orderDetail.setUnitPrice(orderDetailVO.unitPrice());
-			orderDetail.setQuantity(orderDetailVO.quantity());
-			orderDetail.setDiscount(orderDetailVO.discount());
+			OrderDetail orderDetail = OrderDetail.builder()
+					.id(orderDetailId)
+					.order(order)
+					.product(productRepository.getReferenceById(orderDetailVO.productId()))
+					.unitPrice(orderDetailVO.unitPrice())
+					.quantity(orderDetailVO.quantity())
+					.discount(orderDetailVO.discount())
+					.build();
 			order.getOrderDetails().add(orderDetail);
 		}
 	}

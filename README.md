@@ -27,7 +27,11 @@ Importantly the **two** security filter chains show how different security needs
 
 And finally a completely separate Spring Security Filter Chain shows the real "front door" JWT based access that secures everything else.
 
-Along the way we see examples of Lazy / Eager loading of associated RDBMS entities using JPA annotations.  Primary Key assignment from a Sequence and many other uses of Spring and Java that highlight what a real application really does.
+Along the way we see examples of Lazy loading of associated RDBMS entities using JPA annotations.  Primary Key assignment from a Sequence and many other uses of Spring and Java that highlight what a real application really does.
+
+Something perhaps noteworthy is that to tighten up the design the order details were changed to a Lazy Fetch.  This will reduce overhead when building order lists for the user.  But the operational change was in the Entity to VO mapper class.  Since this mapping takes place within the domain layer when the mapper referenced the order details, JPA happily loaded them.  That is what Lazy Fetch is supposed to do.  But it is instructive perhaps that as long as the transaction is open JPA will perform additional database queries to populate this information if it is referenced.
+
+One thing of particular note is that JPA uses the method **save** to persist an entity to the database.  Basically JPA will try to determin if an entity already exists in the database or if it is new SQL: INSERT vs SQL: UPDATE.  Why this matters is that if the entity cannot answer the ***isNew*** query a database read is required to decide what command to issue.  Therefore this codebase includes at the top of the implemented Entities a transient field, the ***isNew*** method and some Annotations that correctly set the value of the transient.  All this is done to prevent an unnecessary database read on modifying DML. 
 
 As a major design feature the application originally published changes to the database to Kafka where another application, this time written in Python, consumes the events and writes them to a MongoDB Data Warehouse.
 

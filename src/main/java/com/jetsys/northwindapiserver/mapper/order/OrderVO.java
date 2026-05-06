@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public record OrderVO(
 		Integer orderId, // null for create; present for PUT
 		@NotNull @Size(min = 1, max = 5) String customerId,
@@ -35,7 +35,7 @@ public record OrderVO(
 		String   updatedBy,
 		@NotNull @Valid Set<OrderDetailVO> orderDetails
 ) {
-	public static OrderVO fromEntity(Order entity) {
+	public static OrderVO fromEntity(Order entity,boolean includeDetails) {
 		OrderVO orderVO = OrderVO.builder()
 				.orderId(entity.getId())
 				.customerId(entity.getCustomerId())
@@ -57,9 +57,11 @@ public record OrderVO(
 				.orderDetails(HashSet.newHashSet(10))
 				.build();
 
+		if (includeDetails) {
 		for(OrderDetail orderDetail : entity.getOrderDetails()) {
 			var detail = OrderDetailVO.fromEntity(orderDetail);
 			orderVO.orderDetails.add(detail);
+		}
 		}
 		return orderVO;
 	}
