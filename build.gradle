@@ -238,6 +238,7 @@ tasks.named('bootJar') {
 }
 
 tasks.named('test') {
+    systemProperty 'spring.profiles.active', 'openapi-gen'
     useJUnitPlatform()
     testLogging {
         events "passed", "skipped", "failed"

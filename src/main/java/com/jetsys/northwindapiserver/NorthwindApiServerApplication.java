@@ -4,9 +4,11 @@ import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @EnableJpaAuditing(auditorAwareRef = "auditorProvider")
+@ConfigurationPropertiesScan
 @SpringBootApplication
 public class NorthwindApiServerApplication {
 

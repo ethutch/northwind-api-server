@@ -2,6 +2,7 @@ package com.jetsys.northwindapiserver.config;
 
 import com.jetsys.northwindapiserver.security.AppUserDetailsService;
 import com.jetsys.northwindapiserver.security.JwtAuthFilter;
+import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -41,7 +42,6 @@ public class SecurityConfig {
 				.authenticationProvider(authenticationProvider)
 				.securityMatcher(EndpointRequest.toAnyEndpoint())
 				.authorizeHttpRequests(authorize -> authorize
-						.requestMatchers("/error").permitAll()
 						// 1. Requirement: Health is public
 						.requestMatchers(EndpointRequest.to("health")).permitAll()
 
@@ -71,6 +71,7 @@ public class SecurityConfig {
 				.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/error").permitAll()
+						.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
 						.requestMatchers("/auth/login").permitAll()
 						.requestMatchers("/api/v1/**").authenticated()
 						.requestMatchers(

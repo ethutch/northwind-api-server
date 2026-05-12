@@ -41,6 +41,9 @@ spec:
           {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name : JAVA_TOOL_OPTIONS
+              value: {{ .Values.javaToolOptions | quote }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

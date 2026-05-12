@@ -176,8 +176,8 @@ public class OrderManagerImpl implements OrderManager {
 		var order = orderRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Order with id:" + id + "not found to delete"));
 
-			orderRepository.deleteById(id);
-			// Save deleted order to outbox for Kafka publishing
+		orderRepository.deleteById(id);
+		// Save deleted order to outbox for Kafka publishing
 		outboxService.publish(order, OutboxAction.DELETE, orderOutboxMaper);
 	}
 

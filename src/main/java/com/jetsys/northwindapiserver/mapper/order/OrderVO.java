@@ -58,10 +58,10 @@ public record OrderVO(
 				.build();
 
 		if (includeDetails) {
-		for(OrderDetail orderDetail : entity.getOrderDetails()) {
-			var detail = OrderDetailVO.fromEntity(orderDetail);
-			orderVO.orderDetails.add(detail);
-		}
+			for (OrderDetail orderDetail : entity.getOrderDetails()) {
+				var detail = OrderDetailVO.fromEntity(orderDetail);
+				orderVO.orderDetails.add(detail);
+			}
 		}
 		return orderVO;
 	}

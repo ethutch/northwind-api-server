@@ -11,9 +11,11 @@ app:
         password: $2y$10$rmxwaAiArd2bWzgPzhUHCO.rH8SSbiOsYGVOG6JMsK6rB0g8VphNS
         roles: ACTUATOR
   apicurio:
-    url: http://localhost:8081
-    customer-event-global-id: 8
-    order-event-global-id: 7
+    url      : http://host.docker.internal:8081
+    group-id : com.jetsys.northwind
+    artifacts:
+      - OrderEvent
+      - CustomerEvent
 
 spring:
   application:
@@ -45,27 +47,29 @@ spring:
     hibernate:
       ddl-auto  : none
 
-  cloud:
-    stream:
-      bindings:
-        customerRequest-out-0:
-          destination : customer-events
-          producer    :
-            useNativeEncoding: true
-      kafka   :
-        binder:
-          brokers: host.docker.internal:9092
-          producer-properties:
-            key.serializer                              : org.apache.kafka.common.serialization.StringSerializer
-            value.serializer                            : io.apicurio.registry.serde.protobuf.ProtobufKafkaSerializer
-
-            apicurio.registry.url                       : http://host.docker.internal:8081/apis/registry/v2
-            apicurio.registry.auto-register             : true
-            apicurio.registry.as-confluent              : true
-
-            apicurio.registry.artifact-resolver-strategy: io.apicurio.registry.serde.strategy.SimpleTopicIdStrategy
-            apicurio.registry.artifact.group-id         : com.jetsys.northwindapiserver.customer
-            apicurio.registry.artifact.artifact-id      : CustomerRequest
+#  This is how you would use Spring Cloud to publish.  See ConsumerMessageProducer for details
+#  We have deprecated all that code in favor of the outbox pattern  See README.md
+#  cloud:
+#    stream:
+#      bindings:
+#        customerRequest-out-0:
+#          destination : customer-events
+#          producer    :
+#            useNativeEncoding: true
+#      kafka   :
+#        binder:
+#          brokers: host.docker.internal:9092
+#          producer-properties:
+#            key.serializer                              : org.apache.kafka.common.serialization.StringSerializer
+#            value.serializer                            : io.apicurio.registry.serde.protobuf.ProtobufKafkaSerializer
+#
+#            apicurio.registry.url                       : http://host.docker.internal:8081/apis/registry/v2
+#            apicurio.registry.auto-register             : true
+#            apicurio.registry.as-confluent              : true
+#
+#            apicurio.registry.artifact-resolver-strategy: io.apicurio.registry.serde.strategy.SimpleTopicIdStrategy
+#            apicurio.registry.artifact.group-id         : com.jetsys.northwindapiserver.customer
+#            apicurio.registry.artifact.artifact-id      : CustomerRequest
   jmx:
    enabled: true
 

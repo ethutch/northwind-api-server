@@ -40,19 +40,6 @@ COPY --from=build /app/build/libs/northwindApiServer-*jar /app/northwindApiServe
 
 EXPOSE 8080
 
-ENTRYPOINT java -Dcom.sun.management.jmxremote \
-                -Dcom.sun.management.jmxremote.authenticate=false \
-                -Dcom.sun.management.jmxremote.ssl=false \
-                -Dcom.sun.management.jmxremote.local.only=false \
-                -Dcom.sun.management.jmxremote.port=5099 \
-                -Dcom.sun.management.jmxremote.rmi.port=5099 \
-                -Djava.rmi.server.hostname=127.0.0.1 \
-                -XX:+HeapDumpOnOutOfMemoryError \
-                -XX:HeapDumpPath=/tmp/heapdump.hprof \
-                -XX:+ExitOnOutOfMemoryError \
-                -Xms500m \
-                -Xmx1g \
-                -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:5006 \
-                -jar /app/northwindApiServer.jar
+ENTRYPOINT ["java", "-jar", "/app/northwindApiServer.jar"]
 
 #                -javaagent:/usr/local/javaagent.jar=8088:/usr/local/prometheus-jmx-config.yaml $JAVA_OPTS \

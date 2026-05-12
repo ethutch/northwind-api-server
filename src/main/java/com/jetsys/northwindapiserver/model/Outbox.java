@@ -32,7 +32,7 @@ public class Outbox {
 	private String partitionKey;
 
 	@Column(name = "global_id", nullable = false)
-	private Integer globalId;
+	private Long globalId;
 
 	@Column(name = "payload", nullable = false)
 	private byte[] payload;

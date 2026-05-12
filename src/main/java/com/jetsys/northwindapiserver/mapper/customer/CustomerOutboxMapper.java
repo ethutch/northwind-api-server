@@ -5,7 +5,7 @@ import com.jetsys.northwindapiserver.model.Customer;
 import com.jetsys.northwindapiserver.model.Outbox;
 import com.jetsys.northwindapiserver.model.OutboxAction;
 import com.jetsys.northwindapiserver.util.ApicurioSchemaRegistry;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -13,17 +13,12 @@ import java.util.UUID;
 import java.util.function.BiFunction;
 
 @Component
+@RequiredArgsConstructor
 public class CustomerOutboxMapper
 		implements BiFunction<Customer, OutboxAction, Outbox> {
 
-	@Value("${app.apicurio.customer-event-global-id}")
-	private int globalId;
-
 	private final ApicurioSchemaRegistry registry;
 
-	public CustomerOutboxMapper(ApicurioSchemaRegistry registry) {
-		this.registry = registry;
-	}
 
 	@Override
 	public Outbox apply(Customer customer, OutboxAction action) {
@@ -54,8 +49,9 @@ public class CustomerOutboxMapper
 		outbox.setAggregateId(customer.getCustomerId());
 		outbox.setTopic("customer-events");
 		outbox.setPartitionKey(customer.getCustomerId());
-		outbox.setGlobalId(globalId);
-		outbox.setPayload(registry.framePayload(globalId, protoBytes));
+		outbox.setGlobalId(registry.getGlobalId("CustomerEvent"));
+		outbox.setPayload(registry.framePayload("CustomerEvent", protoBytes));
+
 		return outbox;
 	}
 

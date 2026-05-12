@@ -7,7 +7,6 @@ import com.jetsys.northwindapiserver.model.OutboxAction;
 import com.jetsys.northwindapiserver.order.OrderDetailMessage;
 import com.jetsys.northwindapiserver.order.OrderEventMessage;
 import com.jetsys.northwindapiserver.util.ApicurioSchemaRegistry;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -19,9 +18,6 @@ import java.util.function.BiFunction;
 @Component
 public class OrderOutboxMapper
 		implements BiFunction<Order, OutboxAction, Outbox> {
-
-	@Value("${app.apicurio.order-event-global-id}")
-	private int globalId;
 
 	private final ApicurioSchemaRegistry registry;
 
@@ -64,8 +60,8 @@ public class OrderOutboxMapper
 		outbox.setAggregateId(String.valueOf(order.getId()));
 		outbox.setTopic("order-events");
 		outbox.setPartitionKey(String.valueOf(order.getId()));
-		outbox.setGlobalId(globalId);
-		outbox.setPayload(registry.framePayload(globalId, protoBytes));
+		outbox.setGlobalId(registry.getGlobalId("OrderEvent"));
+		outbox.setPayload(registry.framePayload("OrderEvent", protoBytes));
 		return outbox;
 	}
 
